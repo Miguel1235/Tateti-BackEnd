@@ -1,76 +1,43 @@
 const express = require('express');
+const redis = require('redis')
+const crypto = require('crypto')
 
-const redis=require('redis')
-
-const messages=require('../messages')
-const commonResponse=require('../commonResponse')
+const messages = require('../messages')
+const commonResponse = require('../commonResponse')
 
 const router = express.Router();
 
+const client = redis.createClient({
+  port: process.env.REDIS_PORT
+})
 
- const client=redis.createClient({
-   port:6379
- })
+client.on('error', err => console.log(err))
 
-client.on('error',err=>console.log(err))
+const {infoUsers,errorsUsers,status} = messages
 
+router.route('/')
+  .post((req, res) => {
+    // Crear un usuario
+    const {username} = req.body
+    if (username) {
+      const hash = crypto.createHash('sha256').update(username).digest('hex')
+      client.hset(`user:${hash}`,'username',username,(err,reply)=>{
+        if(reply===1){
+          res.status(200).json(commonResponse(status.sts1,infoUsers.msg1,[hash]))
+        }
+        else res.status(400).json(commonResponse(status.sts3,errorsUsers.err2))
+      })
+    } else {
+      res.status(400).json(commonResponse(status.sts3,errorsUsers.err1))
+    }
+  })
 
- client.SETNX('userId',1)
-
-
- const {info,errors} = messages
-
- router.route('/')
-   // curl - X POST - d "name=Tomas" localhost:3000/users
-     // Crear un usuario
-   .post((req,res)=>{
-     if(req.body.username){
-       client.GET('userId',(err,reply)=>{
-           if(reply){
-             client.HMSET(`user:${reply}`,'username',req.body.username,'win',0,'draw',0,'lost',0)
-             client.INCR('userId')
-             res.status(200).json(
-               commonResponse('OK',info.msg1)
-             )
-           }
-           else{
-             res.status(400).json(
-               commonResponse("FAILED",errors.err2)
-             )
-           }
-         }
-       )
-     }
-     else{
-        res.status(400).json(
-          commonResponse("FAILED",errors.err1)
-        )
-     }
-   })
-
-
-
- router.route('/:userId')
-   // curl - X GET localhost:3000/users/12
-     // Obtener un usuario
-   .get((req,res)=>{
-     client.HGETALL(`user:${req.params.userId}`,(err,reply)=>{
-       if(reply){
-         res.status(200).json(
-           {
-             status:'SUCCESS',
-             response:[
-               reply
-             ]
-           }
-         )
-       }
-       else{
-           res.status(400).json(
-             commonResponse("FAILED",errors.err3)
-           )
-       }
-     })
-   })
-
- module.exports = router;
+router.route('/:hash')
+  // Obtener una cuenta
+  .get((req, res) => {
+    client.HGETALL(`user:${req.params.hash}`, (err, reply) => {
+      if(reply) res.status(200).json(commonResponse(status.sts1,infoUsers.msg2,reply))
+      else res.status(400).json(commonResponse(status.sts3,errorsUsers.err3))
+    })
+  })
+module.exports = router;

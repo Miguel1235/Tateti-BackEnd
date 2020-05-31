@@ -1,0 +1,8 @@
+version: '3.7'
+services:
+  redis:
+    image: redis:6.0.4-alpine
+    container_name: redisTateti
+    ports:
+      - '6379:6379/tcp'
+      - '6379:6379/udp'
