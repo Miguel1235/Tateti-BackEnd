@@ -12,7 +12,7 @@ Un jugador crea una cuenta
 ```
 curl -X POST -d "username=Miguel" localhost:3000/users
 ```
-####HASH es el hash que se la dio al usuario al registrarse
+#### HASH es el hash que se la dio al usuario al registrarse
 Un jugador quiere obtener info de su cuenta
 ```
 curl -X GET localhost:3000/users/HASH
