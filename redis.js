@@ -37,18 +37,21 @@ const findGames=async ()=>
     }
   })
 
-const find= (key) => new Promise((resolve,reject)=>client.hgetall(key, (err, data) =>data?resolve(data):reject("Error")))
+const find= (key) => new Promise((resolve,reject)=>client.hgetall(key, (err, data) =>data?resolve(data):reject("find failed")))
 
 const findBoard=(gameId)=>new Promise((resolve,reject)=>client.lrange(`board:${gameId}`, 0, -1, (err, board)=>board.length>0?resolve(board):reject(err)))
 
-const getGameId=()=>new Promise((resolve,reject)=>client.get('gameId',(err,data)=>data?resolve(data):reject(err)))
-const incrGameId=()=>new Promise((resolve,reject)=>client.incr('gameId'))
+const getGameId=()=>new Promise((resolve,reject)=>client.get('gameId',(err,data)=>data?resolve(data):reject("getGameId failed")))
+const incrGameId=()=>new Promise((resolve,reject)=>{
+  client.incr('gameId')
+  resolve(1)
+})
 
 const deleteGame = (gameId) => new Promise((resolve,reject)=>client.DEL(`game:${gameId}`, (err, reply) =>reply?resolve(reply):reject(err)))
 
 const createClient=(username)=>new Promise((resolve,reject)=>{
   const hash = crypto.createHash('sha256').update(username).digest('hex')
-  client.hset(`user:${hash}`,'username',username,(err,reply)=>reply===1?resolve(hash):reject(err))
+  client.hset(`user:${hash}`,'username',username,(err,reply)=>reply===1?resolve(hash):reject("createClient failed"))
 })
 
 const createGame=(gameId,username)=>

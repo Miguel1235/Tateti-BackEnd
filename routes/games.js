@@ -37,19 +37,24 @@ router.route('/')
       try{
         const user=await redisDb.find(`user:${hash}`)
         if (user&&user.username === username){
-          try{
             const gameId=await redisDb.getGameId()
             const game=await redisDb.createGame(gameId,username)
-            res.status(200).json(commonResponse(status.sts2, infoGames.msg1, [game]))
             await redisDb.incrGameId()
-          }
-          catch{
-            res.status(400).json(commonResponse(status.sts3, errorsGames.err2))
-          }
+            res.status(200).json(commonResponse(status.sts2, infoGames.msg1, [game]))
         } else res.status(400).json(commonResponse(status.sts3, errorsUsers.err3))
       }
-      catch{
-        res.status(400).json(commonResponse(status.sts3, errorsUsers.err3))
+      catch(e){
+        switch (e) {
+          case "find failed":
+            res.status(400).json(commonResponse(status.sts3, errorsUsers.err3))
+            break
+          case "getGameId failed":
+            res.status(400).json(commonResponse(status.sts3, errorsGames.err2))
+            break
+          default:
+            res.status(400).json(commonResponse(status.sts3,"WTF"))
+            break
+        }
       }
     } else res.status(400).json(commonResponse(status.sts3, errorsGames.err1))
   })
@@ -86,7 +91,6 @@ router.route('/:gameId/board')
                   try{
                     await redisDb.placeMove(gameId,move,username)
                     const board=await redisDb.getBoard(gameId)
-                    console.log("Entro")
                     const checkFull = board.every(square => square.length > 0)
                     const checkWinner =
                       (board[0] === username && board[1] === username && board[2] === username) ||
@@ -113,7 +117,6 @@ router.route('/:gameId/board')
                           res.status(200).json(commonResponse(status.sts1, username + infoGames.msg10, board))
                         }
                         catch{
-                          console.log("CHANGE GAME STATUS")
                           res.status(400).json(commonResponse(status.sts3, errorsGames.err17))
                         }
                       }
@@ -124,7 +127,6 @@ router.route('/:gameId/board')
                         await redisDb.changeCurrentPlaying(gameId,game)
                       }
                       catch{
-                        console.log("CHANGE CURRENT PLAYING")
                         res.status(400).json(commonResponse(status.sts3, errorsGames.err17))
                       }
                   }
