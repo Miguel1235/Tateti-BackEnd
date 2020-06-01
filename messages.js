@@ -26,13 +26,15 @@ const errorsGames={
   err3:"Cannot add the player because the game doesn't exist",
   err4:"The game provided already has a a player",
   err6:"Cannot get the board because the game doesn't exist",
-  err9:"The username or move wasn't provided",
+  err9:"The move wasn't provided or its greater then 8",
   err10:"Cannot make the move because the game doesn't exist or its finished",
   err11:"The move must be a number between 0 and 8",
   err12:"Cannot make the move because it isn't the turn of the player",
   err13:"The selected move has been already made, please choose another",
   err14:"Cannot get the game status because the game doesn't exist",
-  err15:"Cannot delete the selected game"
+  err15:"Cannot delete the selected game",
+  err16:"Cannot get the games because there is a problem with the database",
+  err17:"These is a problem with the database",
 }
 const status={
   sts1:"SUCCESS",
