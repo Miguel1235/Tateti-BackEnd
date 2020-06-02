@@ -37,7 +37,7 @@ const findGames=async ()=>
     }
   })
 
-const find= (key) => new Promise((resolve,reject)=>client.hgetall(key, (err, data) =>data?resolve(data):reject("find failed")))
+const find= (key) => new Promise((resolve,reject)=>client.hgetall(key, (err, data) =>data?resolve(data):reject(`find failed ${key.split(":")[0]}`)))
 
 const findBoard=(gameId)=>new Promise((resolve,reject)=>client.lrange(`board:${gameId}`, 0, -1, (err, board)=>board.length>0?resolve(board):reject(err)))
 
@@ -62,33 +62,29 @@ const createGame=(gameId,username)=>
   })
 const addPlayer=(gameId,username)=>
   new Promise((resolve,reject)=>{
-    client.hset(`game:${gameId}`, 'usernamePlayer2', username, 'status', 'playing')
-    resolve(1)
+    client.hset(`game:${gameId}`, 'usernamePlayer2', username, 'status', 'playing',(err,reply)=>reply===0?resolve(1):reject("addPlayer failed"))
 })
 const checkMove=(gameId,move)=>
   new Promise((resolve,reject)=>{
-    client.lindex(`board:${gameId}`,move,(err,square)=>resolve(square))
+    client.lindex(`board:${gameId}`,move,(err,square)=>err?reject("checkMove failed"):resolve(square))
 })
 const placeMove=(gameId,move,username)=>
   new Promise((resolve,reject)=>{
-    client.lset(`board:${gameId}`, move, username)
-    resolve(1)
+    client.lset(`board:${gameId}`, move, username,(err,reply)=>reply==="OK"?resolve(1):reject("placeMove failed")
+    )
   })
 
-const getBoard=(gameId)=>new Promise((resolve,reject)=>client.lrange(`board:${gameId}`, 0, -1,(err, reply)=>resolve(reply)))
+const getBoard=(gameId)=>new Promise((resolve,reject)=>client.lrange(`board:${gameId}`, 0, -1,(err, reply)=>err?reject("getBoard failed"):resolve(reply)))
 
 const changeGameStatus=(gameId,status)=>
   new Promise(
     (resolve,reject)=>{
-      client.hset(`game:${gameId}`, 'status',status)
-      resolve(1)
+      client.hset(`game:${gameId}`, 'status',status,(err,reply)=>reply===0?resolve(1):reject("changeGameStatus failed"))
     }
   )
 const changeCurrentPlaying=(gameId,game)=>
   new Promise((resolve,reject)=>{
-    client.hset(`game:${gameId}`, 'turnOf', game.turnOf === game.usernamePlayer1 ? game.turnOf = game.usernamePlayer2 : game.turnOf = game.usernamePlayer1)
-    resolve(1)
+    client.hset(`game:${gameId}`, 'turnOf', game.turnOf === game.usernamePlayer1 ? game.turnOf = game.usernamePlayer2 : game.turnOf = game.usernamePlayer1,(err,reply)=>reply===0?resolve(1):reject("changeCurrentPlaying failed"))
   })
-
 
 module.exports={find,findGames,findBoard,deleteGame,createClient,getGameId,createGame,incrGameId,addPlayer,checkMove,placeMove,getBoard,changeGameStatus,changeCurrentPlaying}

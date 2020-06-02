@@ -1,14 +1,9 @@
 const express = require('express');
-const redis = require('redis')
 
 const messages = require('../messages')
 const commonResponse = require('../commonResponse')
 
 const router = express.Router();
-
-const client = redis.createClient({
-  port: process.env.REDIS_PORT
-})
 
 const {infoUsers,errorsUsers,status} = messages
 
@@ -26,6 +21,7 @@ router.route('/')
       catch{
         res.status(400).json(commonResponse(status.sts3,errorsUsers.err2))
       }
+      console.log("Hola")
     }
     else res.status(400).json(commonResponse(status.sts3,errorsUsers.err1))
   })
