@@ -21,16 +21,19 @@ router.route('/')
     try {
       const games = await redisDb.findGames()
       res.status(200).json(commonResponse(status.sts1, infoGames.msg5, games))
-    }
-    catch{
+    } catch {
       res.status(400).json(commonResponse(status.sts3, infoGames.msg16))
     }
   })
 
   // Creamos una partida
   .post(async (req, res) => {
-    const { username } = req.body
-    const { hash } = req.headers
+    const {
+      username
+    } = req.body
+    const {
+      hash
+    } = req.headers
     if (username) {
       try {
         const user = await redisDb.find(`user:${hash}`)
@@ -40,8 +43,7 @@ router.route('/')
           await redisDb.incrGameId()
           res.status(200).json(commonResponse(status.sts2, infoGames.msg1, [game]))
         } else res.status(400).json(commonResponse(status.sts3, errorsUsers.err3))
-      }
-      catch (e) {
+      } catch (e) {
         switch (e) {
           case "find failed user":
             res.status(400).json(commonResponse(status.sts3, errorsUsers.err3))
@@ -58,23 +60,31 @@ router.route('/')
   })
 
 router.route('/:gameId/board')
-  // Obtener el board de la partida  de una partida
+  // Obtener el board de una partida
   .get(async (req, res) => {
-    const { gameId } = req.params
+    const {
+      gameId
+    } = req.params
     try {
       const board = await redisDb.findBoard(gameId)
       res.status(200).json(commonResponse(status.sts1, infoGames.msg6, board))
-    }
-    catch{
+    } catch {
       res.status(400).json(commonResponse(status.sts3, errorsGames.err6))
     }
   })
 
   .post(async (req, res) => {
     // El jugador hace un movimiento
-    const { username, move } = req.body
-    const { gameId } = req.params
-    const { hash } = req.headers
+    const {
+      username,
+      move
+    } = req.body
+    const {
+      gameId
+    } = req.params
+    const {
+      hash
+    } = req.headers
 
     try {
       const user = await redisDb.find(`user:${hash}`)
@@ -114,8 +124,7 @@ router.route('/:gameId/board')
           } else res.status(400).json(commonResponse(status.sts3, errorsGames.err10))
         } else res.status(400).json(commonResponse(status.sts3, errorsGames.err9))
       } else res.status(400).json(commonResponse(status.sts3, errorsUsers.err3))
-    }
-    catch (e) {
+    } catch (e) {
       switch (e) {
         case 'find failed user':
           res.status(400).json(commonResponse(status.sts3, errorsUsers.err3))
@@ -148,12 +157,13 @@ router.route('/:gameId/board')
 router.route('/:gameId')
   // Obtener el status de una partida en curso
   .get(async (req, res) => {
-    const { gameId } = req.params
+    const {
+      gameId
+    } = req.params
     try {
       const game = await redisDb.find(`game:${gameId}`)
       res.status(200).json(commonResponse(status.sts1, infoGames.msg7, [game]))
-    }
-    catch{
+    } catch {
       res.status(400).json(commonResponse(status.sts3, errorsGames.err14))
     }
   })
@@ -161,9 +171,15 @@ router.route('/:gameId')
   .put(
     // El jugador 2 se una a una partida
     async (req, res) => {
-      const { gameId } = req.params
-      const { username } = req.body
-      const { hash } = req.headers
+      const {
+        gameId
+      } = req.params
+      const {
+        username
+      } = req.body
+      const {
+        hash
+      } = req.headers
 
       if (username) {
         try {
@@ -177,8 +193,7 @@ router.route('/:gameId')
               } else res.status(400).json(commonResponse(status.sts3, infoGames.msg8))
             } else res.status(400).json(commonResponse(status.sts3, errorsGames.err4))
           } else res.status(400).json(commonResponse(status.sts3, errorsUsers.err3))
-        }
-        catch (e) {
+        } catch (e) {
           switch (e) {
             case 'find failed user':
               res.status(400).json(commonResponse(status.sts3, errorsUsers.err3))
@@ -199,12 +214,13 @@ router.route('/:gameId')
   )
 
   .delete(async (req, res) => {
-    const { gameId } = req.params
+    const {
+      gameId
+    } = req.params
     try {
       await redisDb.deleteGame(gameId)
       res.status(200).json(commonResponse(status.sts2, infoGames.msg11))
-    }
-    catch{
+    } catch {
       res.status(400).json(commonResponse(status.sts3, errorsGames.err15))
     }
   })

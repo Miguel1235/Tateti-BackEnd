@@ -5,14 +5,12 @@ npm install
 docker-compose up
 REDIS_PORT=6379 npm start
 ```
-
 ### EndPoints
-
 Un jugador crea una cuenta
 ```
 curl -X POST -d "username=Miguel" localhost:3000/users
 ```
-#### HASH es el hash que se la dio al usuario al registrarse
+#### HASH es el numero que nos devolvio al registrarse
 Un jugador quiere obtener info de su cuenta
 ```
 curl -X GET localhost:3000/users/HASH
@@ -25,7 +23,6 @@ Ahora un jugador se quiere unir a una partida
 ```
 curl -X PUT -d "username=Pamela" -H "hash:HASH" localhost:3000/games/23
 ```
-
 Luego el jugador quiere hacer un movimiento en el board
 ```
 curl -X POST -d "username=Jose&move=1" -H "hash:HASH" localhost:3000/games/23/board
